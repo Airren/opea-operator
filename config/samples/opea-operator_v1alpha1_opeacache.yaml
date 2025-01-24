@@ -1,0 +1,9 @@
+apiVersion: opea-operator.opea.io/v1alpha1
+kind: OpeaCache
+metadata:
+  labels:
+    app.kubernetes.io/name: opea-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: opeacache-sample
+spec:
+  # TODO(user): Add fields here

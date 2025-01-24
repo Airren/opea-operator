@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- opea-operator_v1alpha1_opeacache.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
