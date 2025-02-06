@@ -2,7 +2,7 @@ module github.com/opea-project/GenAIInfra/opea-operator
 
 go 1.23.0
 
-godebug default=go1.23
+//godebug default=go1.23
 
 require (
 	github.com/onsi/ginkgo/v2 v2.21.0

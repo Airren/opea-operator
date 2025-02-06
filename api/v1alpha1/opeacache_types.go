@@ -17,25 +17,101 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type HuggingFace struct {
+
+	// +kubebuilder:validation:MinLength=1
+
+	// RepoID model unique id
+	RepoID string `json:"repoId"`
+	// +optional
+	RepoType string `json:"repoType,omitempty"`
+
+	// +optional
+	FileNames []string `json:"fileNames,omitempty"`
+
+	// +optional
+	Revision string `json:"revision,omitempty"`
+
+	// +kubebuilder:validation:MinLength=1
+
+	// Token is the API token for the HuggingFace model hub
+	Token string `json:"token"`
+}
+
+type ModelHub struct {
+	HuggingFace HuggingFace `json:"huggingFace,omitempty"`
+}
+
+type ModelStorage struct {
+	PVC v1.PersistentVolumeClaimSpec `json:"pvc"`
+}
+
+type JobConf struct {
+	// +optional
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+
+	// +optional
+	Env []v1.EnvVar `json:"env,omitempty"`
+}
+
 // OpeaCacheSpec defines the desired state of OpeaCache.
 type OpeaCacheSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of OpeaCache. Edit opeacache_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Download GenAI models from the specified registry
+	Source ModelHub `json:"source"`
+	// Cache the downloaded models in the specified storage
+	Storage ModelStorage `json:"storage"`
+	// Job configuration for the model/data download
+	JobConf JobConf `json:"jobConf,omitempty"`
 }
+
+// OpeaCachePhase describes the phase of the OpeaCache
+// +kubebuilder:validation:Enum=Pending;Executing;Succeeded;Failed
+type OpeaCachePhase string
+
+const (
+	OpeaCachePhasePending   OpeaCachePhase = "Pending"
+	OpeaCachePhaseExecuting OpeaCachePhase = "Executing"
+	OpeaCachePhaseSucceeded OpeaCachePhase = "Succeeded"
+	OpeaCachePhaseFailed    OpeaCachePhase = "Failed"
+)
 
 // OpeaCacheStatus defines the observed state of OpeaCache.
 type OpeaCacheStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// +optional
+	CacheStates `json:"cacheStates,omitempty"`
+	// +optional
+	SourceStates `json:"sourceStates,omitempty"`
+	// +optional
+	Phase OpeaCachePhase `json:"phase,omitempty"`
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+}
+
+type CacheStates struct {
+	CacheCapacity    resource.Quantity `json:"cacheCapacity,omitempty"`
+	Cached           resource.Quantity `json:"cached,omitempty"`
+	CachedPercentage string            `json:"cachedPercentage,omitempty"`
+}
+
+type SourceStates []SourceState
+
+type SourceState struct {
+	SourceName string `json:"name,omitempty"`
+	Size       string `json:"size,omitempty"`
 }
 
 // +kubebuilder:object:root=true

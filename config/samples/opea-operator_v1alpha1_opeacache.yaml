@@ -6,4 +6,20 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: opeacache-sample
 spec:
-  # TODO(user): Add fields here
+  source:
+    huggingFace:
+      repoId: Intel/neural-chat-7b-v3-3
+      repoType: model
+      revision: latest`
+      token: ""
+  storage:
+    pvc:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi
+      storageClassName: local-path
+
+
+
