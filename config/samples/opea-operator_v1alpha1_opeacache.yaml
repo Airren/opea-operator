@@ -4,22 +4,41 @@ metadata:
   labels:
     app.kubernetes.io/name: opea-operator
     app.kubernetes.io/managed-by: kustomize
-  name: opeacache-sample
+  name: chatqna-models
 spec:
   source:
     huggingFace:
       repoId: Intel/neural-chat-7b-v3-3
       repoType: model
-      revision: latest`
-      token: ""
+      revision: latest
+      token: "123"
+    onnx:
+      model: xxxx # Base64 encoded token
+      others: ""
   storage:
     pvc:
+      storageClassName: nfs-client
       accessModes:
         - ReadWriteOnce
       resources:
         requests:
           storage: 30Gi
-      storageClassName: local-path
-
-
-
+  jobConf:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+    env:
+      - name: https_proxy
+        value: http://proxy-us.intel.com:912
+status:
+  cacheStates:
+    cacheCapacity: 50Gi
+    cached: 29.9Gi
+    cachedPercentage: 100%
+  sourceStates:
+    - name: huggingface-models--Intel--neural-chat-7b-v3-3
+      size: 29.9Gi

@@ -202,10 +202,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.OpeaCacheReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controller.NewOpeaCacheReconciler(
+		mgr.GetClient(),
+		mgr.GetScheme(),
+		mgr.GetEventRecorderFor("opeacache-controller"),
+		ctrl.Log.WithName("controllers").WithName("OpeaCache"),
+	).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "OpeaCache")
 		os.Exit(1)
 	}

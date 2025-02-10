@@ -224,7 +224,7 @@ opea-downloader:
 
 image-downloader:
 	@echo "build opea/model-downloader image"
-	docker build  $(DOCKERARGS) -f build/downloader.Dockerfile ./ -t opea/model-downloader:latest
+	docker build  $(DOCKERARGS) --progress plain -f build/downloader.Dockerfile ./ -t opea/model-downloader:latest
 	docker tag opea/model-downloader:latest ghcr.io/airren/opea-model-downloader:latest
 	docker push ghcr.io/airren/opea-model-downloader:latest
 

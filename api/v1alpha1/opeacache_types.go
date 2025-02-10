@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +27,7 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-type HuggingFace struct {
+type HuggingFaceModel struct {
 
 	// +kubebuilder:validation:MinLength=1
 
@@ -42,16 +44,22 @@ type HuggingFace struct {
 
 	// +kubebuilder:validation:MinLength=1
 
-	// Token is the API token for the HuggingFace model hub
+	// Token is the API token for the HuggingFaceModelCli model hub
 	Token string `json:"token"`
 }
 
 type ModelHub struct {
-	HuggingFace HuggingFace `json:"huggingFace,omitempty"`
+	From   string      `json:"from"`
+	Params []v1.EnvVar `json:"params"`
 }
 
 type ModelStorage struct {
-	PVC v1.PersistentVolumeClaimSpec `json:"pvc"`
+	PVC PVC `json:"pvc"`
+}
+type PVC struct {
+	SubPath                      string `json:"subPath"`
+	Create                       *bool  `json:"create,omitempty"`
+	v1.PersistentVolumeClaimSpec `json:",inline"`
 }
 
 type JobConf struct {
@@ -68,7 +76,9 @@ type OpeaCacheSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Download GenAI models from the specified registry
-	Source ModelHub `json:"source"`
+	Sources []ModelHub `json:"sources"`
+	// +optional
+	ShardedParams []v1.EnvVar `json:"shardedParams,omitempty"`
 	// Cache the downloaded models in the specified storage
 	Storage ModelStorage `json:"storage"`
 	// Job configuration for the model/data download
@@ -76,14 +86,15 @@ type OpeaCacheSpec struct {
 }
 
 // OpeaCachePhase describes the phase of the OpeaCache
-// +kubebuilder:validation:Enum=Pending;Executing;Succeeded;Failed
+// +kubebuilder:validation:Enum=Pending;Executing;Ready;Failed
 type OpeaCachePhase string
 
 const (
-	OpeaCachePhasePending   OpeaCachePhase = "Pending"
-	OpeaCachePhaseExecuting OpeaCachePhase = "Executing"
-	OpeaCachePhaseSucceeded OpeaCachePhase = "Succeeded"
-	OpeaCachePhaseFailed    OpeaCachePhase = "Failed"
+	OpeaCachePhasePending    OpeaCachePhase = "Pending"
+	OpeaCachePhasePVCCreated OpeaCachePhase = "PVCCreated"
+	OpeaCachePhaseExecuting  OpeaCachePhase = "Executing"
+	OpeaCachePhaseReady      OpeaCachePhase = "Ready"
+	OpeaCachePhaseFailed     OpeaCachePhase = "Failed"
 )
 
 // OpeaCacheStatus defines the observed state of OpeaCache.
@@ -110,13 +121,15 @@ type CacheStates struct {
 type SourceStates []SourceState
 
 type SourceState struct {
-	SourceName string `json:"name,omitempty"`
-	Size       string `json:"size,omitempty"`
+	Name string `json:"name,omitempty"`
+	Size string `json:"size,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="CachePercentage",type=string,JSONPath=`.status.cacheStates.cachedPercentage`
 // OpeaCache is the Schema for the opeacaches API.
 type OpeaCache struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -133,6 +146,10 @@ type OpeaCacheList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []OpeaCache `json:"items"`
+}
+
+func (c *OpeaCache) GetPVCName() string {
+	return fmt.Sprintf("%s-%s", c.Name, "pvc")
 }
 
 func init() {

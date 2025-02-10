@@ -17,7 +17,7 @@ func decodeToken(token string) string {
 	return string(decodeBytes)
 }
 
-var hfConf = &v1alpha1.HuggingFace{
+var hfConf = &v1alpha1.HuggingFaceModel{
 	RepoID:    "BAAI/bge-base-en-v1.5",
 	RepoType:  "",
 	FileNames: nil,

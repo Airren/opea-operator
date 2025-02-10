@@ -36,25 +36,30 @@ func huggingFaceRun(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to get json flag: %v", err)
 	}
 
-	hfConf := &v1alpha1.HuggingFace{}
+	hfConfs := &[]v1alpha1.HuggingFaceModel{}
 	if jsonStr != "" {
-		if err := json.Unmarshal([]byte(jsonStr), hfConf); err != nil {
+		if err := json.Unmarshal([]byte(jsonStr), hfConfs); err != nil {
 			logrus.Fatalf("Invalid JSON format: %v", err)
 		}
 	}
 
-	hfCli := NewHuggingFaceCli(hfConf)
-	if err := hfCli.Download(); err != nil {
-		logrus.Fatalf("download failed: %v", err)
+	for _, hfConf := range *hfConfs {
+		if hfConf.Token == "" || hfConf.RepoID == "" {
+			logrus.Fatalf("token and repoID are required")
+			continue
+		}
+		hfCli := NewHuggingFaceCli(&hfConf)
+		if err := hfCli.Download(); err != nil {
+			logrus.Fatalf("download failed: %v", err)
+		}
 	}
-
 }
 
 type HuggingFaceCli struct {
-	*v1alpha1.HuggingFace
+	*v1alpha1.HuggingFaceModel
 }
 
-func NewHuggingFaceCli(h *v1alpha1.HuggingFace) *HuggingFaceCli {
+func NewHuggingFaceCli(h *v1alpha1.HuggingFaceModel) *HuggingFaceCli {
 	return &HuggingFaceCli{h}
 }
 

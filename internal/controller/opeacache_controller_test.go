@@ -70,7 +70,7 @@ var _ = Describe("OpeaCache Controller", func() {
 			By("Reconciling the created resource")
 			controllerReconciler := &OpeaCacheReconciler{
 				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
+				scheme: k8sClient.Scheme(),
 			}
 
 			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{

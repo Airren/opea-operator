@@ -1,0 +1,76 @@
+apiVersion: opea-operator.opea.io/v1alpha2
+kind: OpeaCache
+metadata:
+  name: chatqna-models
+spec:
+  sources:
+    - from: huggingface
+      params:
+        - name: repoId
+          value: Intel/neural-chat-7b-v3-3
+        - name: repoType
+          value: model
+        - name: revision
+          value: latest
+        - name: token
+          valueFrom:
+            secretKeyRef:
+              name: hf-token
+              key: AWS_ACCESS_KEY_ID
+    - from: huggingface
+      params:
+        - name: repoId
+          value: BAAI/bge-base-en-v1.5
+        - name: repoType
+          value: model
+        - name: revision
+          value: latest
+    - from: huggingface
+      params:
+        - name: repoId
+          value: BAAI/bge-reranker-base
+        - name: repoType
+          value: model
+        - name: revision
+          value: latest
+        - name: token
+          value: "{hf_token}"
+  sharedOptions:
+    - name: hf.token
+      valueFrom:
+        secretKeyRef:
+          name: hf-token
+          key: AWS_ACCESS_KEY_ID
+  storage:
+    pvc:
+      subPath: "models/hf/"   # mkdir -p ""
+      storageClassName: nfs-client
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi
+  jobConf:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "250m"
+      limits:
+        memory: "256Mi"
+        cpu: "500m"
+    env:
+      - name: https_proxy
+        value: http://proxy-us.intel.com:912
+status:
+  cacheStates:
+    cacheCapacity: 50Gi
+    cached: 33Gi
+    cachedPercentage: 100%
+  sourceStates:
+    - name: huggingface-models--Intel--neural-chat-7b-v3-3
+      size: 29.9Gi
+    - name: huggingface-models--BAAI--bge-base-en-v1.5
+      size: 833M
+    - name: huggingface-models--BAAI--bge-reranker-base
+      size: 2.2G
+

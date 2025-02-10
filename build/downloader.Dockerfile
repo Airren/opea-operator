@@ -3,7 +3,8 @@ FROM golang:1.23-alpine AS builder
 WORKDIR /workspace
 RUN apk update && apk add --no-cache make git bash
 COPY ../go.mod ../go.sum ./
-RUN go mod download
+RUN go env -w GOPROXY="https://goproxy.io,direct"
+RUN go mod download -x
 COPY .. .
 RUN make opea-downloader
 
