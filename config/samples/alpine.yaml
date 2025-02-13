@@ -1,0 +1,23 @@
+--- 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpine
+  labels:
+    name: alpine
+spec:
+  containers:
+  - name: alpine
+    image: alpine:3.12
+    command: ["/bin/sh","sleep","3600"]
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    volumeMounts:
+    - name: cache-volume
+      mountPath: /cache
+  volume:
+    - name: cache-volume
+      persistentVolumeClaim:
+        claimName: chatqna-models

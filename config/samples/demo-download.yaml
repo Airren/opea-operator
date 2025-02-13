@@ -54,19 +54,4 @@ data:
   hf_token: "aGZfRkNtUk5PRWJrblRSTXd0RmdydlN6RE9FYk5WSmlUU2ZUQw=="
 
 
---- 
-apiVersion: v1
-kind: Pod
-metadata:
-  name: alpine
-  labels:
-    name: alpine
-spec:
-  containers:
-  - name: alpine
-    image: alpine:3.12
-    command: ["/bin/sh","sleep","3600"]
-    resources:
-      limits:
-        memory: "128Mi"
-        cpu: "500m"
+
